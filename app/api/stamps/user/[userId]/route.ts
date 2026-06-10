@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromRequest } from "@/lib/auth";
 import { getUserByQr, getCurrentStampCount, STAMPS_PER_CARD } from "@/lib/stamps";
