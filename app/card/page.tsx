@@ -27,36 +27,35 @@ export default function CardPage() {
   const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
 
+  async function fetchStamps() {
+    const res = await fetch("/api/stamps/me");
+    if (res.status === 401) { router.replace("/login"); return; }
+    if (!res.ok) return;
+    setStampData(await res.json());
+  }
+
   useEffect(() => {
     async function load() {
       try {
-        // Fetch stamp data (also validates session via cookie)
-        const res = await fetch("/api/stamps/me");
-        if (res.status === 401) {
-          router.replace("/login");
-          return;
-        }
-        if (!res.ok) throw new Error("Failed to load");
-        const data = await res.json();
-        setStampData(data);
-
-        // Get session user from cookie via server
-        const sessionRes = await fetch("/api/auth/me");
+        const [stampsRes, sessionRes] = await Promise.all([
+          fetch("/api/stamps/me"),
+          fetch("/api/auth/me"),
+        ]);
+        if (stampsRes.status === 401) { router.replace("/login"); return; }
+        if (stampsRes.ok) setStampData(await stampsRes.json());
         if (sessionRes.ok) {
           const sessionData = await sessionRes.json();
           setUser(sessionData.user);
-          // Redirect managers
-          if (sessionData.user?.role === "manager") {
-            router.replace("/dashboard");
-          }
+          if (sessionData.user?.role === "manager") router.replace("/dashboard");
         }
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
+      } catch { /* ignore */ } finally { setLoading(false); }
     }
     load();
+
+    // Poll every 5 seconds so new stamps appear automatically
+    const interval = setInterval(fetchStamps, 5000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   async function handleLogout() {
