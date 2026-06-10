@@ -4,7 +4,7 @@ import { getUserByQr, getCurrentStampCount, STAMPS_PER_CARD } from "@/lib/stamps
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   const session = await getSessionFromRequest(req);
   if (!session) {
@@ -14,7 +14,7 @@ export async function GET(
     return NextResponse.json({ error: "Managers only" }, { status: 403 });
   }
 
-  const { userId } = params;
+  const { userId } = await params;
 
   try {
     const user = await getUserByQr(userId);
