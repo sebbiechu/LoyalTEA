@@ -110,13 +110,18 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-5 text-center">
-            <Link
-              href="/forgot-pin"
-              className="text-sm text-brand-green hover:underline"
-            >
-              Forgot your PIN?
-            </Link>
+          <div className="mt-5 space-y-2 text-center">
+            <div>
+              <Link href="/forgot-pin" className="text-sm text-brand-green hover:underline">
+                Forgot your PIN?
+              </Link>
+            </div>
+            <div className="text-sm text-brand-green/50">
+              New here?{" "}
+              <Link href="/register" className="text-brand-green font-medium hover:underline">
+                Create an account
+              </Link>
+            </div>
           </div>
         </div>
       </div>
