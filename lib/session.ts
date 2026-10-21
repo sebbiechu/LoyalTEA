@@ -3,6 +3,7 @@ import { createHash, timingSafeEqual } from "crypto";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { secureCookies } from "@/lib/cookies";
 
 export type Role = "staff" | "manager";
 export const SESSION_COOKIE = "lt_staff";
@@ -46,7 +47,7 @@ export async function setSession(res: NextResponse, role: Role) {
     .sign(secret());
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: secureCookies(),
     sameSite: "strict",
     path: "/",
     maxAge: MAX_AGE[role],

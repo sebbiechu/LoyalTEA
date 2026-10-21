@@ -1,0 +1,89 @@
+# LoyalTEA self-hosted stack.
+#   1. cp .env.example .env   and fill in the "Self-hosted" section
+#   2. docker compose up -d --build
+#   3. App on http://<server>:3000  (put HTTPS in front: your reverse proxy, or `--profile https` below)
+# Health check: GET /api/health
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: loyaltea
+      POSTGRES_USER: loyaltea
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Creates the tables on first start only (empty data volume)
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U loyaltea -d loyaltea"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # No ports published: the database is only reachable by the app container.
+
+  app:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_STAMPS_FOR_REWARD: ${STAMPS_FOR_REWARD:-8}
+    image: loyaltea:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://loyaltea:${POSTGRES_PASSWORD}@db:5432/loyaltea
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
+      STAFF_PIN: ${STAFF_PIN:?Set STAFF_PIN in .env}
+      MANAGER_PIN: ${MANAGER_PIN:?Set MANAGER_PIN in .env}
+      NEXT_PUBLIC_STAMPS_FOR_REWARD: ${STAMPS_FOR_REWARD:-8}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      ALLOWED_IPS: ${ALLOWED_IPS:-}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      KEEP_DAYS: ${BACKUP_KEEP_DAYS:-30}
+    volumes:
+      - ./backups:/backups
+    # Daily compressed dump; keeps the last KEEP_DAYS days.
+    entrypoint:
+      - sh
+      - -c
+      - |
+        while true; do
+          f=/backups/loyaltea-$$(date +%F).dump
+          pg_dump -h db -U loyaltea -Fc loyaltea > "$$f.tmp" && mv "$$f.tmp" "$$f" && echo "backup ok: $$f"
+          find /backups -name 'loyaltea-*.dump' -mtime +$$KEEP_DAYS -delete
+          sleep 86400
+        done
+
+  # Optional: automatic HTTPS with a free Let's Encrypt certificate.
+  # Needs a public DNS name (DOMAIN) pointing at this server, and ports 80/443 open.
+  # Enable with: docker compose --profile https up -d
+  https:
+    image: caddy:2-alpine
+    profiles: ["https"]
+    restart: unless-stopped
+    depends_on: [app]
+    environment:
+      DOMAIN: ${DOMAIN:-}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+
+volumes:
+  pgdata:
+  caddy_data:

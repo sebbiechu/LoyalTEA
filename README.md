@@ -27,19 +27,27 @@ A digital stamp card for the office canteen. **No colleague accounts and no pers
 | PIN leaked | Change `STAFF_PIN` / `MANAGER_PIN`; every existing staff session is signed out automatically. |
 | Double taps | Stamp/redeem run in database functions that lock the card row; redeem refuses if there aren't 8 stamps. |
 | Mistakes | **Undo last** removes the latest action on a card within 10 minutes. |
+| Outside the office | Optional `ALLOWED_IPS` shows an "Office Wi-Fi only" page to anyone else. |
 
 Known trade-off: if a colleague clears their browser or changes phone without their backup code, that card is gone. That's the price of not storing who they are.
 
-## Setup (about 15 minutes)
+## Hosting options
 
-1. **Supabase**: create a project (or reuse the old one). SQL Editor > New query > paste `supabase/schema.sql` > Run. This removes the old `users`/`stamps` tables.
-2. **Vercel**: import this repo. Add environment variables from `.env.example`:
-   - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (Supabase > Project Settings > API)
-   - `SESSION_SECRET` (any long random string, e.g. `openssl rand -base64 32`)
-   - `STAFF_PIN`, `MANAGER_PIN` (6+ digits, different from each other)
-   - optional `NEXT_PUBLIC_STAMPS_FOR_REWARD` (default 8)
-3. Deploy. Put a QR code poster in the canteen pointing to the site URL so colleagues can find it.
-4. On the till tablet/phone open `/staff`, enter the staff PIN, allow the camera, and add it to the home screen.
+The app works with either database backend, chosen by environment variables:
+
+| Setup | Database setting | Guide |
+| --- | --- | --- |
+| **Company servers** (Docker on a VM) | `docker compose up -d` (Postgres included) | [docs/IT-SETUP.md](docs/IT-SETUP.md) |
+| **Company Azure / existing Postgres** | `DATABASE_URL` | [docs/IT-SETUP.md](docs/IT-SETUP.md) |
+| **Vercel + Supabase** (current pilot) | `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` | below |
+
+All options use the same `database/schema.sql` and share `SESSION_SECRET`, `STAFF_PIN`, `MANAGER_PIN` and optional `ALLOWED_IPS` (office-network lock). See `.env.example`.
+
+### Vercel + Supabase
+
+1. **Supabase**: SQL Editor > New query > paste `database/schema.sql` > Run.
+2. **Vercel**: add `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SESSION_SECRET`, `STAFF_PIN`, `MANAGER_PIN` (and optionally `ALLOWED_IPS`, `NEXT_PUBLIC_STAMPS_FOR_REWARD`).
+3. Deploy. On the till device open `/staff`, enter the staff PIN, allow the camera, add it to the home screen.
 
 ## Local development
 

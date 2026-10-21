@@ -1,0 +1,5 @@
+# Used only with: docker compose --profile https up -d
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy app:3000
+}
