@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/session";
-import { db } from "@/lib/supabase";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -8,19 +8,18 @@ export async function GET(req: NextRequest) {
   const auth = await requireRole("manager");
   if ("error" in auth) return auth.error;
   const days = Math.min(365, Math.max(1, Number(req.nextUrl.searchParams.get("days")) || 30));
-  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+  const since = new Date(Date.now() - days * 86_400_000);
 
-  const rows: { created_at: string; kind: string; drink: string | null; card_code: string }[] = [];
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await db()
-      .from("card_events")
-      .select("created_at, kind, drink, card_code")
-      .gte("created_at", since)
-      .order("created_at", { ascending: true })
-      .range(from, from + 999);
-    if (error) return NextResponse.json({ error: "Export failed" }, { status: 500 });
-    rows.push(...(data ?? []));
-    if (!data || data.length < 1000) break;
+  const rows = [];
+  try {
+    for (let offset = 0; ; offset += 1000) {
+      const page = await db().eventsSince(since, offset, 1000);
+      rows.push(...page);
+      if (page.length < 1000) break;
+    }
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Export failed" }, { status: 500 });
   }
 
   const fmt = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", dateStyle: "short", timeStyle: "short" });

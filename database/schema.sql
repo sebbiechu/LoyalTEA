@@ -1,6 +1,11 @@
 -- LoyalTEA v2 schema: anonymous stamp cards.
 -- Holds NO personal data. A card is a random code generated on the colleague's phone.
--- Run this once in Supabase: SQL Editor > New query > paste > Run.
+--
+-- Works on any PostgreSQL 13+ (self-hosted, Docker, Azure Database for PostgreSQL)
+-- and on Supabase. Safe to run more than once.
+--   Supabase:  SQL Editor > New query > paste > Run
+--   Postgres:  psql "$DATABASE_URL" -f database/schema.sql
+--   Docker:    runs automatically on first start (see docker-compose.yml)
 
 -- Old v1 tables (stored names + PINs). Remove them.
 drop table if exists stamps cascade;
@@ -34,7 +39,14 @@ create table if not exists pin_failures (
 alter table cards        enable row level security;
 alter table card_events  enable row level security;
 alter table pin_failures enable row level security;
-revoke all on cards, card_events, pin_failures from anon, authenticated;
+revoke all on cards, card_events, pin_failures from public;
+
+-- Supabase only: make sure its public API roles get nothing.
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    execute 'revoke all on cards, card_events, pin_failures from anon, authenticated';
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- Card state helper
@@ -134,7 +146,14 @@ returns json language sql stable as $$
   );
 $$;
 
--- Only the server (service role) may call these.
+-- Only the app's own database user may call these.
 revoke execute on function card_state(text, int), add_stamp(text, text, int),
   redeem_reward(text, text, int), undo_last(text, int), report_summary(int, text)
-  from public, anon, authenticated;
+  from public;
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    execute 'revoke execute on function card_state(text, int), add_stamp(text, text, int),
+      redeem_reward(text, text, int), undo_last(text, int), report_summary(int, text)
+      from anon, authenticated';
+  end if;
+end $$;
