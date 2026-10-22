@@ -32,7 +32,7 @@ A step-by-step guide for IT. Allow about an hour.
 | **PostgreSQL 16** | [postgresql.org/download/windows](https://www.postgresql.org/download/windows/) (EDB installer) |
 | **IIS** with **URL Rewrite** and **Application Request Routing (ARR)** | Free Microsoft add-ons for IIS |
 | **NSSM** | [nssm.cc](https://nssm.cc). A small free tool that runs Node.js as a Windows service |
-| A **hostname** | e.g. `loyaltea.company.com` |
+| A **hostname** | e.g. `loyaltea.example.com` |
 | An **HTTPS certificate personal phones trust** | See step 6. This matters |
 | Internet access during install | To download the app's packages from npmjs.org (install only) |
 
@@ -112,9 +112,9 @@ Then in **IIS Manager**:
 
 **This is the step that most often goes wrong.**
 
-HTTPS is required. Phones only allow the till's camera scanner on secure sites. Colleagues use **personal phones**, which **don't trust certificates from an internal company certificate authority**. So the certificate must be publicly trusted:
+HTTPS is required. Phones only allow the till's camera scanner on secure sites. Colleagues use **personal phones**, which **don't trust certificates from an internal certificate authority**. So the certificate must be publicly trusted:
 
-- the company's existing **wildcard certificate** (e.g. `*.company.com`), or
+- an existing **wildcard certificate** (e.g. `*.example.com`), or
 - a free **Let's Encrypt** certificate using a DNS challenge (e.g. via win-acme). This works even if the site is internal only.
 
 ## Step 7: Office Wi-Fi only (recommended)
@@ -145,8 +145,8 @@ Backups go to `C:\LoyalTEA\backups`. The last 30 days are kept (change with `-Ke
 
 ## Step 9: Check it works
 
-1. On a phone on the office Wi-Fi, open `https://loyaltea.company.com`. You should see a stamp card and QR code.
-2. On the till device, open `https://loyaltea.company.com/staff`, enter the staff PIN and allow the camera.
+1. On a phone on the office Wi-Fi, open `https://loyaltea.example.com`. You should see a stamp card and QR code.
+2. On the till device, open `https://loyaltea.example.com/staff`, enter the staff PIN and allow the camera.
 3. Scan the phone and tap **+1 Stamp**. The stamp appears on the phone within a few seconds.
 4. Open `/staff/reports` with the manager PIN. Today's stamp shows up.
 
@@ -156,7 +156,7 @@ Backups go to `C:\LoyalTEA\backups`. The last 30 days are kept (change with `-Ke
 
 | Task | How |
 | --- | --- |
-| **Is it up?** | `https://loyaltea.company.com/api/health` shows `{"status":"ok"}` |
+| **Is it up?** | `https://loyaltea.example.com/api/health` shows `{"status":"ok"}` |
 | **Logs** | `C:\LoyalTEA\logs\app.log` (rotates at 10 MB) |
 | **Restart** | `Restart-Service LoyalTEA` |
 | **Change a PIN** | Edit `C:\LoyalTEA\loyaltea.env`, re-run step 4. Everyone using the old PIN is signed out |

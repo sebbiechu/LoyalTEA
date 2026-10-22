@@ -15,7 +15,7 @@
 | **Personal details stored** | None | Still none |
 | **Fake or copied stamps** | Easy to copy a stamp | Only canteen staff can add stamps |
 | **Knowing what sells** | No idea | Reports on drinks, busy times and free drinks given |
-| **Cost** | Printing cards and stampers | Free to run on a company server |
+| **Cost** | Printing cards and stampers | Free to run on your own server |
 
 ---
 
@@ -71,7 +71,7 @@ Pick the guide for where it's being hosted:
 
 | Where | Guide | Cost |
 | --- | --- | --- |
-| **Company Windows Server** (recommended) | **[docs/WINDOWS-SERVER.md](docs/WINDOWS-SERVER.md)** | Little to none |
+| **Windows Server** (recommended) | **[docs/WINDOWS-SERVER.md](docs/WINDOWS-SERVER.md)** | Little to none |
 | Linux server, Azure, or the current trial setup (Vercel) | [docs/OTHER-HOSTING.md](docs/OTHER-HOSTING.md) | Varies |
 
 Every option needs the same few settings:

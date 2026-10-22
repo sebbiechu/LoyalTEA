@@ -17,8 +17,8 @@ LoyalTEA is an internal canteen stamp card that **stores no personal data**: col
 | **Special category / sensitive data?** | None. |
 | **Data on the phone** | The card code, in the browser's local storage and one cookie. No tracking or analytics. |
 | **Data retention** | Stamp history is kept to show the card and produce reports. Failed-PIN timestamps older than 24 hours are cleared automatically. Backups are kept 30 days (configurable). |
-| **Data location** | On the company server where it's hosted. |
-| **Third parties** | None when self-hosted. Fonts and all other files are served from the company server. No analytics, advertising or tracking. (The pilot used Vercel and Supabase.) |
+| **Data location** | On the server where it's hosted. |
+| **Third parties** | None when self-hosted. Fonts and all other files are served from the same server. No analytics, advertising or tracking. (The pilot used Vercel and Supabase.) |
 
 ## Access and sign-in
 
@@ -55,7 +55,7 @@ LoyalTEA is an internal canteen stamp card that **stores no personal data**: col
 
 | | |
 | --- | --- |
-| **Hosting** | Company Windows Server: IIS, Node.js 22 LTS, PostgreSQL 16 |
+| **Hosting** | Windows Server: IIS, Node.js 22 LTS, PostgreSQL 16 |
 | **Backups** | Daily automated database backup, 30 days kept, tested restore procedure |
 | **Logging** | App log on the server (rotated at 10 MB). No personal data logged |
 | **Updates** | New versions are installed by re-running the install script. Dependencies are standard, widely used open-source packages (Next.js, React, node-postgres) |

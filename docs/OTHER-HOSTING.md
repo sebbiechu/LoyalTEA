@@ -5,7 +5,7 @@ The recommended option is **Windows Server**: see [WINDOWS-SERVER.md](WINDOWS-SE
 | Option | Good for |
 | --- | --- |
 | [A. Linux server with Docker](#a-linux-server-with-docker) | If a Linux VM is available. One command sets up everything |
-| [B. Existing PostgreSQL or Azure](#b-existing-postgresql-or-azure) | If the company already runs a database server or uses Azure |
+| [B. Existing PostgreSQL or Azure](#b-existing-postgresql-or-azure) | If a database server or Azure is already in use |
 | [C. Vercel and Supabase](#c-vercel-and-supabase-the-pilot) | Trials and demos. Free tier, no servers to manage |
 
 All options use the same settings (see `.env.example`) and the same `database/schema.sql`.
@@ -32,7 +32,7 @@ This runs three containers:
 | `app` | LoyalTEA on port 3000 (`APP_PORT`). Runs as a non-root user |
 | `backup` | Saves a database backup to `./backups` every day and keeps 30 days |
 
-Put the company's HTTPS reverse proxy or load balancer in front of port 3000. It must **append** the visitor's address to `X-Forwarded-For` (nginx: `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`).
+Put an HTTPS reverse proxy or load balancer in front of port 3000. It must **append** the visitor's address to `X-Forwarded-For` (nginx: `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`).
 
 | Task | Command |
 | --- | --- |
@@ -61,4 +61,4 @@ On Azure: App Service or Container Apps for the app, Azure Database for PostgreS
    - optional: `ALLOWED_IPS` (the office's public IP address), `NEXT_PUBLIC_STAMPS_FOR_REWARD`
 3. Deploy. Vercel only picks up changed settings on a new deployment.
 
-Note: this keeps the data with Vercel and Supabase rather than on company servers, so it may need separate approval for live use.
+Note: this keeps the data with Vercel and Supabase rather than on your own servers, so it may need separate approval for live use.
