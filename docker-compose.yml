@@ -1,7 +1,7 @@
-# LoyalTEA self-hosted stack.
+# LoyalTEA on a Linux server with Docker (see docs/OTHER-HOSTING.md).
 #   1. cp .env.example .env   and fill in the "Self-hosted" section
 #   2. docker compose up -d --build
-#   3. App on http://<server>:3000  (put HTTPS in front: your reverse proxy, or `--profile https` below)
+#   3. App on http://<server>:3000. Put your HTTPS reverse proxy in front of it.
 # Health check: GET /api/health
 
 services:
@@ -67,23 +67,5 @@ services:
           sleep 86400
         done
 
-  # Optional: automatic HTTPS with a free Let's Encrypt certificate.
-  # Needs a public DNS name (DOMAIN) pointing at this server, and ports 80/443 open.
-  # Enable with: docker compose --profile https up -d
-  https:
-    image: caddy:2-alpine
-    profiles: ["https"]
-    restart: unless-stopped
-    depends_on: [app]
-    environment:
-      DOMAIN: ${DOMAIN:-}
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-
 volumes:
   pgdata:
-  caddy_data:
