@@ -7,37 +7,7 @@
 // hosted in the cloud, or the internal Wi-Fi range if hosted on the office network.
 // This is a second layer: the main control should be the firewall / network itself.
 import { NextRequest, NextResponse } from "next/server";
-
-function ipv4ToInt(ip: string): number | null {
-  const p = ip.split(".");
-  if (p.length !== 4) return null;
-  let n = 0;
-  for (const part of p) {
-    const v = Number(part);
-    if (!/^\d+$/.test(part) || v > 255) return null;
-    n = n * 256 + v;
-  }
-  return n;
-}
-
-function matches(ip: string, rule: string): boolean {
-  const clean = ip.replace(/^::ffff:/, "");
-  if (!rule.includes("/")) return clean === rule;
-  const [base, bitsStr] = rule.split("/");
-  const bits = Number(bitsStr);
-  const a = ipv4ToInt(clean), b = ipv4ToInt(base);
-  if (a === null || b === null || !(bits >= 0 && bits <= 32)) return false;
-  const size = 2 ** (32 - bits);
-  return Math.floor(a / size) === Math.floor(b / size);
-}
-
-function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get("x-real-ip") ??
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    ""
-  );
-}
+import { clientIp, matches } from "@/lib/ip";
 
 const BLOCKED_PAGE = `<!doctype html><html lang="en-GB"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>LoyalTEA</title>
@@ -56,7 +26,7 @@ export function proxy(req: NextRequest) {
   // Monitoring and the logo for the blocked page stay reachable.
   if (path === "/api/health" || path === "/logo-white.png") return NextResponse.next();
 
-  const ip = clientIp(req);
+  const ip = clientIp(req.headers.get("x-forwarded-for"));
   if (ip && rules.some((r) => matches(ip, r))) return NextResponse.next();
 
   if (path.startsWith("/api/"))

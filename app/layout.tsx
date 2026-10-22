@@ -1,4 +1,11 @@
 import type { Metadata, Viewport } from "next";
+// Fonts ship inside the app (from npm), so phones never contact Google or any other third party.
+import "@fontsource/fredoka/500.css";
+import "@fontsource/fredoka/600.css";
+import "@fontsource/nunito-sans/400.css";
+import "@fontsource/nunito-sans/600.css";
+import "@fontsource/nunito-sans/700.css";
+import "@fontsource/nunito-sans/800.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,14 +26,6 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-GB">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap"
-        />
-      </head>
       <body>{children}</body>
     </html>
   );
